@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Banking App</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Welcome to the Banking App</h1>
+
+    <h2>Create User</h2>
+    <form id="create-user-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name">
+        <button type="submit">Create User</button>
+    </form>
+
+    <h2>Users</h2>
+    <ul id="users-list"></ul>
+
+    <h2>Deposit</h2>
+    <form id="deposit-form">
+        <label for="deposit-user-id">User ID:</label>
+        <input type="text" id="deposit-user-id" name="user_id" required><br><br>
+        <label for="deposit-amount">Amount:</label>
+        <input type="text" id="deposit-amount" name="amount" required><br><br>
+        <button type="submit">Deposit</button>
+    </form>
+
+    <h2>Withdraw</h2>
+    <form id="withdraw-form">
+        <label for="withdraw-user-id">User ID:</label>
+        <input type="text" id="withdraw-user-id" name="user_id" required><br><br>
+        <label for="withdraw-amount">Amount:</label>
+        <input type="text" id="withdraw-amount" name="amount" required><br><br>
+        <button type="submit">Withdraw</button>
+    </form>
+
+    <h2>Transfer</h2>
+    <form id="transfer-form">
+        <label for="transfer-sender-id">Sender ID:</label>
+        <input type="text" id="transfer-sender-id" name="sender_id" required><br><br>
+        <label for="transfer-receiver-id">Receiver ID:</label>
+        <input type="text" id="transfer-receiver-id" name="receiver_id" required><br><br>
+        <label for="transfer-amount">Amount:</label>
+        <input type="text" id="transfer-amount" name="amount" required><br><br>
+        <button type="submit">Transfer</button>
+    </form>
+
+    <h2>Check Balance</h2>
+    <form id="balance-form">
+        <label for="balance-user-id">User ID:</label>
+        <input type="text" id="balance-user-id" name="user_id" required><br><br>
+        <button type="submit">Check Balance</button>
+    </form>
+
+    <h2>Compliance Check</h2>
+    <button id="compliance-check">Check Compliance</button>
+
+    <div id="result"></div>
+
+    <script>
+        $(document).ready(function() {
+        // Function to handle API requests
+        function sendRequest(method, url, data, successCallback) {
+            $.ajax({
+                type: method,
+                url: url,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: successCallback,
+                error: function(xhr, textStatus, errorThrown) {
+                    $("#result").text(xhr.responseJSON.error);
+                }
+            });
+        }
+
+        // Deposit form submission
+        $("#deposit-form").submit(function(event) {
+            event.preventDefault();
+            var formData = {
+                user_id: $("#deposit-user-id").val(),
+                amount: parseFloat($("#deposit-amount").val())
+            };
+            sendRequest("POST", "/deposit", formData, function(response) {
+                $("#result").text(response.message);
+            });
+        });
+
+        // Withdraw form submission
+        $("#withdraw-form").submit(function(event) {
+            event.preventDefault();
+            var formData = {
+                user_id: $("#withdraw-user-id").val(),
+                amount: parseFloat($("#withdraw-amount").val())
+            };
+            sendRequest("POST", "/withdraw", formData, function(response) {
+                $("#result").text(response.message);
+            });
+        });
+
+        // Transfer form submission
+        $("#transfer-form").submit(function(event) {
+            event.preventDefault();
+            var formData = {
+                sender_id: $("#transfer-sender-id").val(),
+                receiver_id: $("#transfer-receiver-id").val(),
+                amount: parseFloat($("#transfer-amount").val())
+            };
+            sendRequest("POST", "/transfer", formData, function(response) {
+                $("#result").text(response.message);
+            });
+        });
+
+        // Balance form submission
+        $("#balance-form").submit(function(event) {
+            event.preventDefault();
+            var user_id = $("#balance-user-id").val();
+            sendRequest("GET", "/balance/" + user_id, null, function(response) {
+                $("#result").text("Balance: " + response.balance);
+            });
+        });
+
+        // Compliance check button click
+        $("#compliance-check").click(function() {
+            sendRequest("GET", "/compliance", null, function(response) {
+                $("#result").text("Total balance across all users: " + response.total_balance);
+            });
+        });
+
+        // Function to fetch users and populate the list
+        function fetchUsers() {
+            fetch('/users')
+                .then(response => response.json())
+                .then(data => {
+                    const usersList = document.getElementById('users-list');
+                    usersList.innerHTML = '';
+                    data.users.forEach(user => {
+                        const li = document.createElement('li');
+                        li.textContent = `${user[1]} (ID: ${user[0]})`;
+                        usersList.appendChild(li);
+                    });
+                });
+        }
+
+        // Fetch users and populate the list on page load
+        fetchUsers();
+
+        // Event listener for form submission
+        document.getElementById('create-user-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            const name = document.getElementById('name').value.trim();
+            if (name !== '') {
+                fetch('/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: name })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Failed to create user');
+                    }
+                })
+                .then(data => {
+                    alert(data.message);
+                    // Refresh the users list
+                    fetchUsers();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to create user');
+                });
+            } else {
+                alert('Name cannot be empty');
+            }
+        });
+    });
+    </script>
+</body>
+</html>
