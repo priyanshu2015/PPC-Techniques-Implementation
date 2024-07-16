@@ -19,6 +19,8 @@ received_tensors = {}
 def load_files():
     for party in ['bank1', 'bank2']:
         file_path = f'server/encrypted_data_{party}.pth'
+        if not os.path.exists(file_path):
+            continue
         received_tensors[party] = torch.load(file_path)
 
 @app.route('/upload/<string:party>', methods=['POST'])
@@ -32,6 +34,7 @@ def receive_data(party):
 
 @app.route('/compute', methods=['GET'])
 def compute():
+    print("Computing...")
     # Assuming all data is received
     crypten.init_thread(0, 1)
     result = received_tensors['bank1'] > received_tensors['bank2']
@@ -44,7 +47,15 @@ def compute():
         return jsonify({"message": "bank1's data is not greater than bank2's data."})
 
 
+def test():
+    if 'bank1' not in received_tensors or 'bank2' not in received_tensors:
+        return
+    plain = received_tensors['bank1'].get_plain_text()
+    print(f"bank1's data: {plain}")
+
 
 if __name__ == '__main__':
+    print("Starting server...")
     load_files()
-    app.run(debug=True)
+    test()
+    app.run(debug=True, host="0.0.0.0")
