@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request, jsonify
 import crypten
 import torch
@@ -5,10 +7,19 @@ import torch
 app = Flask(__name__)
 
 # Initialize CrypTen
-crypten.init()
+# check if os is windows
+if os.name == 'nt':
+    crypten.init_thread(0, 1)
+else:
+    crypten.init()
 
 # Store received tensors
 received_tensors = {}
+
+def load_files():
+    for party in ['bank1', 'bank2']:
+        file_path = f'server/encrypted_data_{party}.pth'
+        received_tensors[party] = torch.load(file_path)
 
 @app.route('/upload/<string:party>', methods=['POST'])
 def receive_data(party):
@@ -22,14 +33,18 @@ def receive_data(party):
 @app.route('/compute', methods=['GET'])
 def compute():
     # Assuming all data is received
-    result = received_tensors['alice'] > received_tensors['bob']
+    crypten.init_thread(0, 1)
+    result = received_tensors['bank1'] > received_tensors['bank2']
+    plain = received_tensors['bank1'].get_plain_text()
+    print(f"bank1's data: {plain}")
     result = result.reveal()
     if result.item():
-        return jsonify({"message": "Alice's data is greater than Bob's data."})
+        return jsonify({"message": "bank1's data is greater than bank2's data."})
     else:
-        return jsonify({"message": "Alice's data is not greater than Bob's data."})
+        return jsonify({"message": "bank1's data is not greater than bank2's data."})
 
 
 
 if __name__ == '__main__':
+    load_files()
     app.run(debug=True)
