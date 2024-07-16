@@ -1,2 +1,0 @@
-This approach looks like it will not work.
-it uses a multi-threaded approach for smpc but we want to use a client-server model.
