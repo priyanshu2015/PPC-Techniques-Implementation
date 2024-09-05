@@ -12,9 +12,6 @@ def about():
     return "This is the about page."
 
 
-
-
-
 @main_bp.route('/users_page')
 def users_page():
     return render_template('users.html')

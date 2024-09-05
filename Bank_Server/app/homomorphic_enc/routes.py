@@ -1,4 +1,23 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
+import requests
+import base64
+import json
+import tenseal as ts
+
+import app.homomorphic_enc.homomorphic_encryption
+from app.homomorphic_enc.homomorphic_encryption import (
+    encrypt_vector_for_sum,
+    serialize_encrypted_vector,
+    serialize_encrypted_vectors,
+    convert_flot_to_int,
+    deserialize_encrypted_vector,
+    deserialize_encrypted_vectors,
+    convert_int_to_float,
+    get_serialized_context
+)
+
+from database.controller import fetch_transactions_by_userid
+
 
 phe_bp = Blueprint('phe', __name__)
 
@@ -7,3 +26,61 @@ phe_bp = Blueprint('phe', __name__)
 def login():
     return "This is the Homomorphic-Encryption-Page."
 
+
+@phe_bp.route('/transaction_sum/<int:userid>', methods=['GET'])
+def request_transaction_sum(userid):
+    transactions = fetch_transactions_by_userid(userid)
+    if not transactions:
+        return jsonify({"error": "No transactions found for user"}), 404
+
+    # extract the amounts from the transactions and multiply by 100 to convert to int
+    amounts = [convert_flot_to_int(transaction['amount']) for transaction in transactions]
+
+    # encrypt and base64 encode the amounts
+    encrypted_vector, number_of_elements = encrypt_vector_for_sum(amounts)
+
+    """
+    #------------------------------------
+    # Theoretical sum
+    deserialized_vectors = deserialize_encrypted_vectors(serialized_encrypted_vectors)
+    encrypted_sum2 = deserialized_vectors[0].sum()
+    for s in deserialized_vectors[1:]:
+        encrypted_sum2 += s.sum()
+
+    serialized_datas = serialize_encrypted_vector(encrypted_sum2)
+    decrypted_sum2 = encrypted_sum2.decrypt()
+    print(f"Decrypted real sum: {decrypted_sum2[0]}")
+    # ------------------------------------
+    """
+
+    encrypted_sum = request_encrypted_sum(encrypted_vector, number_of_elements)
+
+    decrypted_sum = encrypted_sum.decrypt()
+    print("Decrypted sum: ", decrypted_sum[0])
+    real_sum = convert_int_to_float(decrypted_sum[0])
+    print("Sum: ", real_sum)
+    return jsonify(real_sum), 200
+
+
+def request_encrypted_sum(encrypted_vector, number_of_elements) -> ts.bfv_vector:
+    headers = {'Content-Type': 'application/json'}
+    url = "http://localhost:6000/compute-sum"
+
+    serialized_encrypted_vectors = serialize_encrypted_vectors(encrypted_vector)
+
+    data = {
+        "context": get_serialized_context(),
+        "number_of_elements": number_of_elements,
+        "encrypted_vectors": serialized_encrypted_vectors.copy()
+    }
+    json_data = json.dumps(data)
+    # Send the POST request with the byte array as the body
+    response = requests.post(url, data=json_data, headers=headers)
+
+    if response.status_code != 200:
+        raise Exception("Error in request_encrypted_sum")
+
+    response_data = response.json()
+    serialized_encrypted_sum = response_data['sum']
+    encrypted_sum = deserialize_encrypted_vector(serialized_encrypted_sum)
+    return encrypted_sum

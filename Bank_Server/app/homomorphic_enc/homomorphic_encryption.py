@@ -1,6 +1,6 @@
 import tenseal as ts
 import time
-
+import base64
 
 POLY_MODULUS_DEGREE = 4096
 # Setup TenSEAL context
@@ -75,7 +75,7 @@ def encrypt_vector_for_sum(vector: list) -> (list, int):
     :param vector:
     :return:
     """
-    divisor = 100  # the divisor splits the vector into smaller chunks to be encrypted,
+    divisor = int(POLY_MODULUS_DEGREE / 2)  # the divisor splits the vector into smaller chunks to be encrypted,
     encrypted_chunks = []
     if len(vector) > divisor:
         for i in range(0, len(vector), divisor):
@@ -86,10 +86,80 @@ def encrypt_vector_for_sum(vector: list) -> (list, int):
         encrypted_vector = ts.bfv_vector(context, vector)
         encrypted_chunks.append(encrypted_vector)
 
-    return encrypted_chunks, len(encrypted_chunks)
+    return encrypted_chunks, len(vector)
 
+
+def serialize_encrypted_vector(encrypted_vectors: ts.bfv_vector) -> str:
+    """
+    Serialize the encrypted vector to bytes and then to base64
+    :param encrypted_vectors: encrypted vector
+    :return: serialized encrypted vector
+    """
+    bytes = encrypted_vectors.serialize()
+    serialized = base64.b64encode(bytes).decode('utf-8')
+    return serialized
+
+
+def serialize_encrypted_vectors(encrypted_vectors: list[ts.bfv_vector]) -> list[str]:
+    """
+    Serialize the encrypted vectors to bytes and then to base64
+    :param encrypted_vectors: list of encrypted vectors
+    :return: list of serialized encrypted vectors
+    """
+
+
+    serialized_vectors = []
+    for v in encrypted_vectors:
+        serialized = serialize_encrypted_vector(v)
+        serialized_vectors.append(serialized)
+    return serialized_vectors
+
+
+def deserialize_encrypted_vector(serialized_vector: bytes) -> ts.bfv_vector:
+    """
+    Deserialize the encrypted vector from base 64 to bytes to ts.bfv_vector
+    :param serialized_vector: serialized encrypted vector
+    :return: encrypted vector
+    """
+    bytes = base64.b64decode(serialized_vector)
+    return ts.bfv_vector_from(context, bytes)
+
+
+def deserialize_encrypted_vectors(serialized_vectors: list[bytes]) -> list[ts.bfv_vector]:
+    """
+    Deserialize the encrypted vectors from base 64 to bytes to ts.bfv_vector
+    :param serialized_vectors: list of serialized encrypted vectors
+    :return: list of encrypted vectors
+    """
+    encrypted_vectors = []
+    for s in serialized_vectors:
+        bfv_vector = deserialize_encrypted_vector(s)
+        encrypted_vectors.append(bfv_vector)
+    return encrypted_vectors
+
+
+def get_serialized_context():
+    context_serialized = context.serialize(save_public_key=True, save_secret_key=False, save_galois_keys=True)
+    context_encoded = base64.b64encode(context_serialized).decode('utf-8')
+    return context_encoded
 
 if __name__ == '__main__':
+    vector = [1 for i in range(1000)]
+    encrypted_vectors, number_of_elements = encrypt_vector_for_sum(vector)
+
+    serialized_vectors = serialize_encrypted_vectors(encrypted_vectors)
+    for s in serialized_vectors:
+        # print byte size of s
+        print(len(s))
+
+    deserialized_vectors = deserialize_encrypted_vectors(serialized_vectors)
+    encrypted_sum = deserialized_vectors[0].sum()
+    for s in deserialized_vectors[1:]:
+        encrypted_sum += s.sum()
+
+    decrypted_sum = encrypted_sum.decrypt()
+    print(decrypted_sum[0])
+    """
     for size in range(516000, 516100, 10):
         vector = [1 for i in range(size)]
         s = sum(vector)
@@ -100,3 +170,4 @@ if __name__ == '__main__':
         print(f"Time taken: {(stop-start)/1e6} ms")
         print(f"Encrypted sum: {vector_sum} / {sum(vector)}")
         print("-------------------------------------------------")
+    """
