@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>User List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>UserID</th>
+                <th>Name</th>
+                <th>Balance</th>
+                <th>Credit Score</th>
+            </tr>
+        </thead>
+        <tbody id="users-table-body">
+            <!-- Data will be populated here via JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        // Fetch user data from the server
+        fetch('/data/users')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('users-table-body');
+                data.forEach(user => {
+                    const row = `<tr>
+                                    <td>${user.userid}</td>
+                                    <td>${user.name}</td>
+                                    <td>${user.balance}</td>
+                                    <td>${user.creditscore}</td>
+                                 </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            });
+    </script>
+</body>
+</html>

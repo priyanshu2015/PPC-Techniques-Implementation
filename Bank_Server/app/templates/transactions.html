@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Transaction List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>TransactionID</th>
+                <th>UserID</th>
+                <th>Amount</th>
+                <th>Target</th>
+            </tr>
+        </thead>
+        <tbody id="transactions-table-body">
+            <!-- Data will be populated here via JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        // Fetch transaction data from the server
+        fetch('/data/transactions')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('transactions-table-body');
+                data.forEach(transaction => {
+                    const row = `<tr>
+                                    <td>${transaction.transactionid}</td>
+                                    <td>${transaction.userid}</td>
+                                    <td>${transaction.amount}</td>
+                                    <td>${transaction.target}</td>
+                                 </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            });
+    </script>
+</body>
+</html>
