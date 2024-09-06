@@ -9,6 +9,13 @@ import base64
 
 app = Flask(__name__)
 
+"""
+This is the computation server that will perform the homomorphic encryption operations.
+It will receive the encrypted vectors from the bank server, perform the sum operation, and send back the result.
+
+For it to work properly, the tenseal context must be the same as the one used in the bank server.
+
+"""
 
 def serialize_encrypted_vector(encrypted_vectors: ts.bfv_vector) -> str:
     """
@@ -27,7 +34,6 @@ def serialize_encrypted_vectors(encrypted_vectors: list[ts.bfv_vector]) -> list[
     :param encrypted_vectors: list of encrypted vectors
     :return: list of serialized encrypted vectors
     """
-
 
     serialized_vectors = []
     for v in encrypted_vectors:
@@ -49,9 +55,17 @@ def deserialize_encrypted_vectors(context, serialized_vectors: list[bytes]) -> l
     return encrypted_vectors
 
 
-
 @app.route('/compute-sum', methods=['POST'])
 def compute_sum():
+    """
+    This route is used to compute the sum of encrypted vectors.
+
+    The JSON data should contain the following fields:
+    - encrypted_vectors: list of base64-encoded encrypted vectors
+    - context: base64-encoded tenseal context
+    - number_of_elements: number of elements in the encrypted vectors
+    :return:
+    """
     json_data = request.json
 
     encrypted_base64_vectors = json_data["encrypted_vectors"]
@@ -61,7 +75,6 @@ def compute_sum():
     context_serialized = base64.b64decode(context_encoded)
     context = ts.context_from(context_serialized)
 
-
     encrypted_vectors = deserialize_encrypted_vectors(context, encrypted_base64_vectors)
 
     encrypted_sum = encrypted_vectors[0].sum()
@@ -69,14 +82,17 @@ def compute_sum():
         encrypted_sum += s.sum()
 
     serialized_data = serialize_encrypted_vector(encrypted_sum)
-    print(serialized_data)
+
     print("Computed sum of encrypted vectors, sending back to Bank Server")
     return jsonify({"sum": serialized_data})
 
 
-
 @app.route('/compute-sum-single', methods=['POST'])
 def compute_sum_single():
+    """
+    this is for testing purposes only
+    :return:
+    """
     # Parse the JSON data
     json_data = request.json
     json_data = json.loads(json_data)

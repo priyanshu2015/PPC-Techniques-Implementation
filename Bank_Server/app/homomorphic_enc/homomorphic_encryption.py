@@ -143,6 +143,7 @@ def get_serialized_context():
     context_encoded = base64.b64encode(context_serialized).decode('utf-8')
     return context_encoded
 
+
 if __name__ == '__main__':
     vector = [1 for i in range(1000)]
     encrypted_vectors, number_of_elements = encrypt_vector_for_sum(vector)
