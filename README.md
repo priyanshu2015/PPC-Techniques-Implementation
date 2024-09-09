@@ -1,5 +1,9 @@
 # TODO
+- Implement a gui for shamir secret sharing 
+- Implement a gui for homomorphic encryption
+  - Implement a gui for the computation server
 - Implement the zero-knowledge proof
+  - Implement the zero-knowledge proof for the computation server
 - Implement the secure multi-party computation between multiple bank servers
 - write the documentation for the code
 - integrate the gui with the bank server for click and run

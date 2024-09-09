@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS user (
     creditscore INTEGER NOT NULL
 )
 ''')
-
 # Create transactions table
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS transactions (
@@ -44,6 +43,7 @@ def create_random_transactions(userid, count=5):
     for _ in range(count):
         amount = round(random.uniform(10, 500), 2)
         target = random.choice(targets)
+
         cursor.execute('''
         INSERT INTO transactions (userid, amount, target)
         VALUES (?, ?, ?)
