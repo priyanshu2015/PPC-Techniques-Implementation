@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template
 
+from database.controller import fetch_all_users
+
 # Create the blueprint for main routes
 main_bp = Blueprint('main', __name__)
 
@@ -22,3 +24,11 @@ def users_page():
 @main_bp.route('/transactions_page')
 def transactions_page():
     return render_template('transactions.html')
+
+
+@main_bp.route('/homomorphic_enc_page')
+def display_users():
+    all_users = fetch_all_users()
+
+
+    return render_template('user_statistics.html', users=all_users)

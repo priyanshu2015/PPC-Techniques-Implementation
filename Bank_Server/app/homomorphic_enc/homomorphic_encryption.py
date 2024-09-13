@@ -2,12 +2,14 @@ import tenseal as ts
 import time
 import base64
 
-POLY_MODULUS_DEGREE = 4096
+POLY_MODULUS_DEGREE = 16384
+#POLY_MODULUS_DEGREE = 4096
 # Setup TenSEAL context
 context = ts.context(
     ts.SCHEME_TYPE.BFV,
     poly_modulus_degree=POLY_MODULUS_DEGREE,
-    plain_modulus=1032193
+    #plain_modulus=1032193
+    plain_modulus=536903681
     #plain_modulus=4294967295,
 )
 context.generate_galois_keys()
@@ -145,13 +147,26 @@ def get_serialized_context():
 
 
 if __name__ == '__main__':
-    vector = [1 for i in range(1000)]
+    vector = [
+        758.44, -42.17, -131.62, 335.83, 713.28, 926.36, 322.87, 427.88, -402.07,
+        -187.94, -57.61, 941.3, 573.78, 374.23, -112.35, -99.83, -106.83, -106.1,
+        302.22, -167.31, -325.4, 352.88, 408.14, -455.52, 131.08, -266.86, -158.13,
+        436.95, 734.76, -66.03, 269.47, 251.3, -76.69, 776.45, 576.62, 502.76,
+        -425.05, 204.42, -392.02, 651.18, 956.07, -122.1, -398.93, 589.15, -226.54,
+        -112.51, -498.89, -378.42, 501.34, -172.22
+    ]
+    vector = [convert_flot_to_int(val) for val in vector[:30]]
+    print(vector)
+    #vector = [100 for i in range(50)] + [-100 for i in range(50)]
     encrypted_vectors, number_of_elements = encrypt_vector_for_sum(vector)
 
     serialized_vectors = serialize_encrypted_vectors(encrypted_vectors)
     for s in serialized_vectors:
         # print byte size of s
-        print(len(s))
+        size_bytes = len(s)
+        kb = size_bytes / 1024
+
+        print(f"Size: {kb} Kb")
 
     deserialized_vectors = deserialize_encrypted_vectors(serialized_vectors)
     encrypted_sum = deserialized_vectors[0].sum()
@@ -159,7 +174,8 @@ if __name__ == '__main__':
         encrypted_sum += s.sum()
 
     decrypted_sum = encrypted_sum.decrypt()
-    print(decrypted_sum[0])
+    real_sum = convert_int_to_float(decrypted_sum[0])
+    print(f"Decrypted sum: {decrypted_sum[0]}, converted sum: {real_sum}, real sum: {sum(vector)/100}")
     """
     for size in range(516000, 516100, 10):
         vector = [1 for i in range(size)]

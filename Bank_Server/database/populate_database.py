@@ -38,36 +38,66 @@ def fetch_random_users(n):
 
 
 # Function to generate random transactions
-def create_random_transactions(userid, count=5):
-    targets = ['ATM Withdraw', 'Money Transfer', 'Online Shopping', 'Bill Payment']
-    for _ in range(count):
-        amount = round(random.uniform(10, 500), 2)
-        target = random.choice(targets)
 
+import random
+
+
+# Modified function to create random transactions
+def create_random_transactions(userid, count=100):
+    positive_targets = ['Wage', 'Money Transfer']
+    negative_targets = ['ATM Withdraw', 'Online Shopping', 'Bill Payment']
+
+    total_balance = 0  # To track the balance resulting from the transactions
+
+    for _ in range(count):
+        # Randomly choose between positive and negative transactions
+        if random.choice([True, False]):
+            # Positive transaction
+            amount = round(random.uniform(100, 1000), 2)  # Higher range for positive transactions
+            target = random.choice(positive_targets)
+        else:
+            # Negative transaction
+            amount = round(random.uniform(10, 500), 2) * -1  # Negative amount for withdrawals/payments
+            target = random.choice(negative_targets)
+
+        # Update balance based on the transaction amount
+        total_balance += amount
+
+        # Insert transaction into the transactions table
         cursor.execute('''
         INSERT INTO transactions (userid, amount, target)
         VALUES (?, ?, ?)
         ''', (userid, amount, target))
 
+    return total_balance  # Return the sum of all transactions
 
-# Populate database with random users and transactions
+
+# Modified function to populate the database with dummy data and compute correct balances
 def populate_db_with_dummy_data(user_count=10):
-    users = fetch_random_users(user_count)
+    users = fetch_random_users(user_count)  # Fetch random users
     for user in users:
         name = f"{user['name']['first']} {user['name']['last']}"
-        balance = round(random.uniform(100, 5000), 2)
         creditscore = random.randint(300, 850)
 
+        # Insert the user into the user table
         cursor.execute('''
-        INSERT INTO user (name, balance, creditscore)
-        VALUES (?, ?, ?)
-        ''', (name, balance, creditscore))
+               INSERT INTO user (name, balance, creditscore)
+               VALUES (?, ?, ?)
+               ''', (name, 0, creditscore))
 
         # Get the last inserted userid
         userid = cursor.lastrowid
 
-        # Create random transactions for this user
-        create_random_transactions(userid, random.randint(3, 10))
+        # Create random transactions for this user (100 transactions)
+        balance = create_random_transactions(userid, random.randint(80, 120))
+        #balance = create_random_transactions(userid, 50)
+
+        # Now update the user with the correct balance based on transactions
+        cursor.execute('''
+        UPDATE user
+        SET balance = ?
+        WHERE userid = ?
+        ''', (round(balance, 2), userid))
 
 
 # Insert dummy data into the database

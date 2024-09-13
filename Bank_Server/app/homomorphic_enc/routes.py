@@ -1,3 +1,5 @@
+from time import perf_counter
+
 from flask import Blueprint, render_template, jsonify
 import requests
 import base64
@@ -21,6 +23,8 @@ from database.controller import fetch_transactions_by_userid
 
 phe_bp = Blueprint('phe', __name__)
 
+COMPUTATION_SERVER_URL = "http://localhost:5500/api"
+
 
 @phe_bp.route('/test')
 def login():
@@ -29,6 +33,8 @@ def login():
 
 @phe_bp.route('/transaction_sum/<int:userid>', methods=['GET'])
 def request_transaction_sum(userid):
+    start = perf_counter()
+
     transactions = fetch_transactions_by_userid(userid)
     if not transactions:
         return jsonify({"error": "No transactions found for user"}), 404
@@ -59,12 +65,14 @@ def request_transaction_sum(userid):
     print("Decrypted sum: ", decrypted_sum[0])
     real_sum = convert_int_to_float(decrypted_sum[0])
     print("Sum: ", real_sum)
+    end = perf_counter()
+    print(f"Time taken: {end - start} seconds")
     return jsonify(real_sum), 200
 
 
 def request_encrypted_sum(encrypted_vector, number_of_elements) -> ts.bfv_vector:
     headers = {'Content-Type': 'application/json'}
-    url = "http://localhost:6000/compute-sum"
+    url = f"{COMPUTATION_SERVER_URL}/compute-sum"
 
     serialized_encrypted_vectors = serialize_encrypted_vectors(encrypted_vector)
 
@@ -78,6 +86,7 @@ def request_encrypted_sum(encrypted_vector, number_of_elements) -> ts.bfv_vector
     response = requests.post(url, data=json_data, headers=headers)
 
     if response.status_code != 200:
+        print(f"Failed to get response from computation server. Status code: {response.status_code}")
         raise Exception("Error in request_encrypted_sum")
 
     response_data = response.json()
