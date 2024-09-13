@@ -48,6 +48,23 @@
             font-weight: bold;
         }
 
+        .request-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+
+        .status-success {
+            background-color: #007bff; /* Blue for success */
+            color: white;
+        }
+
+        .status-error {
+            background-color: #ff4c4c; /* Red for error */
+            color: white;
+        }
+
         .request-timestamp {
             float: right;
             color: #777;
@@ -71,6 +88,12 @@
             font-family: monospace;
             white-space: pre-wrap;
             margin-top: 10px;
+        }
+
+        .request-size {
+            color: #555;
+            margin-top: 5px;
+            font-size: 14px;
         }
 
         .no-requests {
@@ -130,13 +153,28 @@
             addRequestToLog(data, true); // Add new requests at the top
         });
 
+        // Function to convert bytes to a human-readable format (KB or MB)
+        function formatBytes(bytes) {
+            if (bytes >= 1048576) {
+                return (bytes / 1048576).toFixed(2) + ' MB';
+            } else if (bytes >= 1024) {
+                return (bytes / 1024).toFixed(2) + ' KB';
+            } else {
+                return bytes + ' bytes';
+            }
+        }
+
         // Function to add a request to the log
         function addRequestToLog(data, prepend) {
             const li = document.createElement('li');
             li.classList.add('request-box');
 
+            // Determine the status color based on the status code
+            const statusClass = data.status_code === 200 ? 'status-success' : 'status-error';
+
             li.innerHTML = `
                 <span class="request-method">${data.method}</span>
+                <span class="request-status ${statusClass}">${data.status_code}</span>
                 <span class="request-timestamp">${data.time}</span>
                 <div class="request-details">
                     <strong>Path:</strong> ${data.path} <br>
@@ -144,7 +182,11 @@
             `;
 
             if (data.method === 'POST' && data.json_data) {
-                li.innerHTML += `<div class="request-json"><strong>JSON Data:</strong><br> ${JSON.stringify(data.json_data, null, 2)}</div>`;
+                const dataSizeFormatted = formatBytes(data.data_size_bytes);
+                li.innerHTML += `
+                    <div class="request-json"><strong>JSON Data:</strong><br> ${JSON.stringify(data.json_data, null, 2)}</div>
+                    <div class="request-size"><strong>Data Size:</strong> ${dataSizeFormatted}</div>
+                `;
             }
 
             li.innerHTML += `</div>`;

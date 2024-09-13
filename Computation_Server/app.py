@@ -68,7 +68,54 @@ def deserialize_encrypted_vectors(context, serialized_vectors: list[bytes]) -> l
 # storage for incoming requests
 request_log = []
 
+# Middleware that logs request data only for API routes
+@app.before_request
+def log_request_data():
+    if not request.path.startswith('/api/'):
+        return
+    req_data = {
+        "method": request.method,
+        "path": request.path,
+        "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "remote_addr": request.remote_addr,
+    }
 
+    # If the request is a POST, log its JSON data
+    if request.method == 'POST':
+        json_data = copy.deepcopy(request.get_json())  # Deep copy to avoid modifying original data
+
+        # Truncate the data to limit the size being logged
+        json_data['context'] = json_data['context'][:70] + "..."
+
+        for i in range(len(json_data['encrypted_vectors'])):
+            json_data['encrypted_vectors'][i] = json_data['encrypted_vectors'][i][:70] + "..."
+
+        req_data['json_data'] = json_data
+        req_data['data_size_bytes'] = request.content_length
+
+    # Temporarily store request data for logging after the response
+    request.req_data = req_data
+
+
+# After request handler to log the response status code
+@app.after_request
+def log_response(response):
+    # Only log for API routes
+    if not request.path.startswith('/api/'):
+        return response
+
+    # Add the response status code to the log data
+    request.req_data['status_code'] = response.status_code
+
+    # Log the full request and response data
+    request_log.append(request.req_data)
+
+    # Emit the logged request data via socketio (if needed)
+    socketio.emit('new_request', request.req_data)
+
+    return response
+
+"""
 # Middleware that logs request data only for API routes
 @app.before_request
 def log_request_data():
@@ -93,10 +140,12 @@ def log_request_data():
         for i in range(len(json_data['encrypted_vectors'])):
             json_data['encrypted_vectors'][i] = json_data['encrypted_vectors'][i][:70] + "..."
         req_data['json_data'] = json_data
+        req_data['data_size_bytes'] = request.content_length
 
     # Log the request to the request_log list
     request_log.append(req_data)
     socketio.emit('new_request', req_data)
+"""
 
 
 # API route to fetch the request log dynamically via polling
