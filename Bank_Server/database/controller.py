@@ -1,6 +1,7 @@
 import sqlite3
 
 DATABASE = 'database/bank.db'
+#DATABASE = 'bank.db'
 
 def get_db_connection():
     """
@@ -84,3 +85,10 @@ def fetch_transactions_by_userid(userid):
     transactions = cursor.fetchall()
     conn.close()
     return [dict(transaction) for transaction in transactions]
+
+if __name__ == '__main__':
+    print(fetch_all_users())
+    print(fetch_all_transactions())
+    print(fetch_user_by_id(1))
+    print(fetch_transaction_by_id(1))
+    print(fetch_transactions_by_userid(1))
