@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Log</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+        }
+
+        #request-log-container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        #request-log {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .request-box {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .request-method {
+            display: inline-block;
+            background-color: green;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .request-timestamp {
+            float: right;
+            color: #777;
+            font-size: 12px;
+        }
+
+        .request-details {
+            margin-top: 10px;
+        }
+
+        .request-remote {
+            color: #555;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .request-json {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 10px;
+        }
+
+        .no-requests {
+            text-align: center;
+            color: #999;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="request-log-container">
+        <h1>Compute Server</h1>
+        <h2>Incoming Request Log</h2>
+        <p id="no-requests-text" class="no-requests">No requests received yet</p>
+        <ul id="request-log">
+            <!-- Requests will be dynamically added here -->
+        </ul>
+    </div>
+
+    <script>
+        // Function to hide or show the 'no requests' text
+        function updateNoRequestsText() {
+            const requestLog = document.getElementById('request-log');
+            const noRequestsText = document.getElementById('no-requests-text');
+            if (requestLog.children.length === 0) {
+                noRequestsText.style.display = 'block';
+            } else {
+                noRequestsText.style.display = 'none';
+            }
+        }
+
+        // Fetch initial data via GET request
+        fetch('/request_log')
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    updateNoRequestsText();
+                } else {
+                    for (let i = 0; i < data.length; i++) {
+                        addRequestToLog(data[i], false); // Add old requests at the bottom
+                    }
+                }
+            });
+
+        // Fetch the other data via websocket
+
+        // Connect to the Flask-SocketIO server
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('WebSocket connected');
+        });
+
+        // Listen for 'new_request' events from the server
+        socket.on('new_request', function(data) {
+            addRequestToLog(data, true); // Add new requests at the top
+        });
+
+        // Function to add a request to the log
+        function addRequestToLog(data, prepend) {
+            const li = document.createElement('li');
+            li.classList.add('request-box');
+
+            li.innerHTML = `
+                <span class="request-method">${data.method}</span>
+                <span class="request-timestamp">${data.time}</span>
+                <div class="request-details">
+                    <strong>Path:</strong> ${data.path} <br>
+                    <span class="request-remote"><strong>Remote Address:</strong> ${data.remote_addr}</span>
+            `;
+
+            if (data.method === 'POST' && data.json_data) {
+                li.innerHTML += `<div class="request-json"><strong>JSON Data:</strong><br> ${JSON.stringify(data.json_data, null, 2)}</div>`;
+            }
+
+            li.innerHTML += `</div>`;
+
+            // Prepend new requests to the top or append old requests to the bottom
+            const requestLog = document.getElementById('request-log');
+            if (prepend) {
+                requestLog.insertBefore(li, requestLog.firstChild);
+            } else {
+                requestLog.appendChild(li);
+            }
+
+            // Update the 'no requests' text
+            updateNoRequestsText();
+        }
+    </script>
+</body>
+</html>

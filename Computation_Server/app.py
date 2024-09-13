@@ -1,13 +1,23 @@
 import json
+from threading import Thread
+from time import perf_counter
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
+import datetime
+from flask_socketio import SocketIO
+
 import pandas as pd
 import tenseal as ts
 import io
 import traceback
 import base64
 
+import copy
+
 app = Flask(__name__)
+socketio = SocketIO(app)
+
+
 
 """
 This is the computation server that will perform the homomorphic encryption operations.
@@ -55,7 +65,55 @@ def deserialize_encrypted_vectors(context, serialized_vectors: list[bytes]) -> l
     return encrypted_vectors
 
 
-@app.route('/compute-sum', methods=['POST'])
+# storage for incoming requests
+request_log = []
+
+
+# Middleware that logs request data only for API routes
+@app.before_request
+def log_request_data():
+    r = request
+    if not request.path.startswith('/api/'):
+        return
+    print("middleware triggered")
+    r = request
+    #print("middleware computing triggered")
+    req_data = {
+        "method": request.method,
+        "path": request.path,
+        "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "remote_addr": request.remote_addr,
+    }
+    if request.method == 'POST':
+        json_data = copy.deepcopy(request.get_json())  # deep copy to avoid modifying the original data
+
+        # reduce the size of the data to be logged
+        json_data['context'] = json_data['context'][:70] + "..."
+
+        for i in range(len(json_data['encrypted_vectors'])):
+            json_data['encrypted_vectors'][i] = json_data['encrypted_vectors'][i][:70] + "..."
+        req_data['json_data'] = json_data
+
+    # Log the request to the request_log list
+    request_log.append(req_data)
+    socketio.emit('new_request', req_data)
+
+
+# API route to fetch the request log dynamically via polling
+@app.route('/request_log')
+def get_request_log():
+    return jsonify(request_log)
+
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/api/test')
+def test():
+    return jsonify("test")
+
+@app.route('/api/compute-sum', methods=['POST'])
 def compute_sum():
     """
     This route is used to compute the sum of encrypted vectors.
@@ -66,6 +124,9 @@ def compute_sum():
     - number_of_elements: number of elements in the encrypted vectors
     :return:
     """
+    start = perf_counter()
+
+    print("Received request to compute sum of encrypted vectors")
     json_data = request.json
 
     encrypted_base64_vectors = json_data["encrypted_vectors"]
@@ -84,10 +145,12 @@ def compute_sum():
     serialized_data = serialize_encrypted_vector(encrypted_sum)
 
     print("Computed sum of encrypted vectors, sending back to Bank Server")
+    end = perf_counter()
+    print(f"Time taken: {end - start} seconds")
     return jsonify({"sum": serialized_data})
 
 
-@app.route('/compute-sum-single', methods=['POST'])
+@app.route('/api/compute-sum-single', methods=['POST'])
 def compute_sum_single():
     """
     this is for testing purposes only
@@ -121,4 +184,6 @@ def compute_sum_single():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=6000)
+    #app.run(debug=True, port=5500)
+    socketio.run(app, debug=True, port=5500)
+    #socketio.run(app, debug=True, port=5500)
