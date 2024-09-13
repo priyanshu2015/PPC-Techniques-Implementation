@@ -23,6 +23,7 @@ def load_files():
             continue
         received_tensors[party] = torch.load(file_path)
 
+
 @app.route('/upload/<string:party>', methods=['POST'])
 def receive_data(party):
     print(f"Received data from {party}.")
@@ -31,6 +32,7 @@ def receive_data(party):
     file.save(file_path)
     received_tensors[party] = torch.load(file_path)
     return jsonify({"message": f"{party}'s data received and loaded."})
+
 
 @app.route('/compute', methods=['GET'])
 def compute():
