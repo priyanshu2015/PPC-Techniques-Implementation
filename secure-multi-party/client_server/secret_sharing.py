@@ -59,34 +59,3 @@ def reconstruct_secret(shares, p=2 ** 127 - 1):
     print(f"y_s: {y_s}")
     return lagrange_interpolate(0, x_s, y_s, p)
 
-
-# Example usage
-if __name__ == "__main__":
-    # The secret we want to share (e.g., 12345)
-    secret = 111233216424745047463126641208267665733
-
-    # Number of shares to create
-    num_shares = 6
-
-    # Minimum number of shares needed to reconstruct the secret
-    threshold = 4
-
-    # Split the secret into shares
-    shares = split_secret(secret, num_shares, threshold)
-    print(f"Shares: {shares}")
-
-    # Select any 3 shares and try to reconstruct the secret
-    subset_of_shares = random.sample(shares, k=threshold)
-    #subset_of_shares = shares[:threshold]
-    recovered_secret = reconstruct_secret(subset_of_shares)
-    assert recovered_secret == secret, "Secret recovery failed"
-    print(f"Reconstructed secret: {recovered_secret}")
-
-
-# usecases
-# - Multiple parties receives encrypted and part of data from the source and performs computations on the data.
-# - The parties then send the encrypted data to the server for further computations.
-# - Transaction approval from multiple parties.
-# - For safe tranmission of data from source to destination via multiple routes
-# - For decentralized data storage and retrieval
-# - For collaborative decision making

@@ -27,6 +27,7 @@ y = int(input('Enter value of Bob secret y (within global range) = '))
 # Input RSA parameters of Bob
 e = int(input('Enter public key of Bob e = '))
 d = int(input('Enter private key of Bob d = '))
+# n (modulus) is the product of two large prime numbers used in the RSA algorithm to perform encryption and decryption
 n = int(input('Enter n  = '))
 
 # Public key of Bob
@@ -39,11 +40,15 @@ Alice Compute C = E(PUb, M1), M1 -- a large
 random number
  Compute C1 = C – x and sends C1 to Bob
 '''
+# bit_length() returns the number of bits necessary to represent an integer in binary, excluding the sign bit.
+# 5 in binary is 101, which requires 3 bits
 N = n.bit_length()
 # choose random M1
+# random.getrandbits generates a random number with N bits
 m1 = random.getrandbits(N)
 while m1 >= n:
     m1 = random.getrandbits(N)
+# m1 < n
 N = m1.bit_length()
 # Alice encrypts m1 using publicKeyBob RSA
 c = encryptDecrypt(m1, publicKeyBob)
