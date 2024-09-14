@@ -22,8 +22,6 @@ from zero_knowledge_proof.schnorr_core import ZK, ZKSignature, ZKData
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-
-
 """
 This is the computation server that will perform the homomorphic encryption operations.
 It will receive the encrypted vectors from the bank server, perform the sum operation, and send back the result.
@@ -31,6 +29,7 @@ It will receive the encrypted vectors from the bank server, perform the sum oper
 For it to work properly, the tenseal context must be the same as the one used in the bank server.
 
 """
+
 
 def serialize_encrypted_vector(encrypted_vectors: ts.bfv_vector) -> str:
     """
@@ -70,8 +69,32 @@ def deserialize_encrypted_vectors(context, serialized_vectors: list[bytes]) -> l
     return encrypted_vectors
 
 
+def truncate_dict(d: dict, max_length: int) -> dict:
+    """
+    Truncate the dictionary values to the specified length
+    :param d: dictionary
+    :param max_length: maximum length of the values
+    :return: dictionary with truncated values
+    """
+    for key in d:
+        if isinstance(d[key], str):
+            d[key] = d[key][:max_length] + "..."
+
+        # Recursively truncate nested dictionaries
+        if isinstance(d[key], dict):
+            d[key] = truncate_dict(d[key], max_length)
+
+        # Recursively truncate nested lists
+        if isinstance(d[key], list):
+            for i in range(len(d[key])):
+                if isinstance(d[key][i], str):
+                    d[key][i] = d[key][i][:max_length] + "..."
+    return d
+
+
 # storage for incoming requests
 request_log = []
+
 
 # Middleware that logs request data only for API routes
 @app.before_request
@@ -87,16 +110,10 @@ def log_request_data():
 
     # If the request is a POST, log its JSON data
     if request.method == 'POST':
-        json_data = copy.deepcopy(request.get_json())  # Deep copy to avoid modifying original data
-
-        # Truncate the data to limit the size being logged
-        json_data['context'] = json_data.get('context', "")[:70] + "..."
-
-        for i in range(len(json_data.get('encrypted_vectors', []))):
-            json_data['encrypted_vectors'][i] = json_data['encrypted_vectors'][i][:70] + "..."
-
-        req_data['json_data'] = json_data
         req_data['data_size_bytes'] = request.content_length
+
+        json_data = copy.deepcopy(request.get_json())  # Deep copy to avoid modifying original data
+        req_data['json_data'] = truncate_dict(json_data, 70)
 
     # Temporarily store request data for logging after the response
     request.req_data = req_data
@@ -120,38 +137,6 @@ def log_response(response):
 
     return response
 
-"""
-# Middleware that logs request data only for API routes
-@app.before_request
-def log_request_data():
-    r = request
-    if not request.path.startswith('/api/'):
-        return
-    print("middleware triggered")
-    r = request
-    #print("middleware computing triggered")
-    req_data = {
-        "method": request.method,
-        "path": request.path,
-        "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "remote_addr": request.remote_addr,
-    }
-    if request.method == 'POST':
-        json_data = copy.deepcopy(request.get_json())  # deep copy to avoid modifying the original data
-
-        # reduce the size of the data to be logged
-        json_data['context'] = json_data['context'][:70] + "..."
-
-        for i in range(len(json_data['encrypted_vectors'])):
-            json_data['encrypted_vectors'][i] = json_data['encrypted_vectors'][i][:70] + "..."
-        req_data['json_data'] = json_data
-        req_data['data_size_bytes'] = request.content_length
-
-    # Log the request to the request_log list
-    request_log.append(req_data)
-    socketio.emit('new_request', req_data)
-"""
-
 
 # API route to fetch the request log dynamically via polling
 @app.route('/request_log')
@@ -163,9 +148,11 @@ def get_request_log():
 def home():
     return render_template('index.html')
 
+
 @app.route('/api/test')
 def test():
     return jsonify("test")
+
 
 @app.route('/api/compute-sum', methods=['POST'])
 def compute_sum():
@@ -289,6 +276,6 @@ def compute():
 
 
 if __name__ == '__main__':
-    #app.run(debug=True, port=5500)
+    # app.run(debug=True, port=5500)
     socketio.run(app, debug=True, port=5500)
-    #socketio.run(app, debug=True, port=5500)
+    # socketio.run(app, debug=True, port=5500)
