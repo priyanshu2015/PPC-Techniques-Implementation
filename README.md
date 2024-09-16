@@ -1,5 +1,5 @@
 # TODO
-- Implement a gui for shamir secret sharing 
+- Implement a gui for shamir secret sharing
 - Implement a gui for homomorphic encryption
   - Implement a gui for the computation server
 - Implement the zero-knowledge proof
@@ -16,7 +16,7 @@ a controller file for the database connection.
 The app folder contains the following folders:
 - data:
   - This folder contains the simple api to access the database.
-    
+
 - homomorphic_encryption:
   - This folder contains the homomorphic encryption implementation.
   - The file "homomorphic_encryption.py" contains the implementation of the homomorphic encryption.
