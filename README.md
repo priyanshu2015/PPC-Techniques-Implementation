@@ -1,5 +1,5 @@
 # TODO
-- Implement a gui for shamir secret sharing 
+- Implement a gui for shamir secret sharing
 - Implement a gui for homomorphic encryption
   - Implement a gui for the computation server
 - Implement the zero-knowledge proof
@@ -16,7 +16,7 @@ a controller file for the database connection.
 The app folder contains the following folders:
 - data:
   - This folder contains the simple api to access the database.
-    
+
 - homomorphic_encryption:
   - This folder contains the homomorphic encryption implementation.
   - The file "homomorphic_encryption.py" contains the implementation of the homomorphic encryption.
@@ -42,3 +42,15 @@ The app folder contains the following folders:
 # Computation Server
 - Server to perform the homomorphic encryption.
 - has some routes to perform the homomorphic encryption.
+
+
+
+\\\hspace*{1} \text{ P: } \hspace*{2} R == M - c \cdot S
+\\\text{P1: } R == (m \cdotp G)-(c \cdotp S) \hspace*{113} \text{Substitute } M
+\\\text{P2: } r \cdot G == (m \cdotp G)-(c \cdotp S) \hspace*{100} \text{Substitute } R
+\\\text{P3: } r \cdot G == ((r + ck) \cdot G) - (c \cdot S) \hspace*{61} \text{ Substitute } m
+\\\text{P4: } r \cdot G == ((r + ck) \cdot G) - (c \cdot (k \cdot G)) \hspace*{37} \text{ Substitute } S
+\\\text{P5: } r \cdot G == ((r \cdot G) + ((ck) \cdot G)) - ((ck) \cdot G)) \hspace*{10} \text{Distributive property}
+\\\text{P6: } r \cdot G == (r \cdot G) + ((ck \cdot G) - (ck \cdot G)) \hspace{31} \text{Associative property}
+\\\hspace*{1} \text{ C:  } \hspace*{1} r \cdot G == r \cdot G
+\\ \textbf{QED}
