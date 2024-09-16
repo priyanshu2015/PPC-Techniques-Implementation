@@ -2,8 +2,8 @@ import tenseal as ts
 import time
 import base64
 
-#POLY_MODULUS_DEGREE = 16384
-POLY_MODULUS_DEGREE = 8192
+POLY_MODULUS_DEGREE = 16384
+#POLY_MODULUS_DEGREE = 8192
 #POLY_MODULUS_DEGREE = 4096
 
 # Setup TenSEAL context

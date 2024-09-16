@@ -75,6 +75,8 @@ def request_encrypted_sum(encrypted_vector, number_of_elements) -> ts.bfv_vector
     url = f"{COMPUTATION_SERVER_URL}/compute-sum"
 
     serialized_encrypted_vectors = serialize_encrypted_vectors(encrypted_vector)
+    print(f"Size of Context in bytes: {len(get_serialized_context().encode('utf-8'))}")
+    print(f"Size of Encrypted Vectors in bytes: {sum([len(v.encode('utf-8')) for v in serialized_encrypted_vectors])}")
 
     data = {
         "context": get_serialized_context(),
@@ -82,6 +84,10 @@ def request_encrypted_sum(encrypted_vector, number_of_elements) -> ts.bfv_vector
         "encrypted_vectors": serialized_encrypted_vectors.copy()
     }
     json_data = json.dumps(data)
+
+    size_in_bytes = len(json_data.encode('utf-8'))
+    print(f"Size of json_data in bytes: {size_in_bytes}")
+
     # Send the POST request with the byte array as the body
     response = requests.post(url, data=json_data, headers=headers)
 
