@@ -28,6 +28,8 @@ def lagrange_interpolate(x, x_s, y_s, p):
 
 
 # Function to split a secret into shares
+# p is defined as 2**127 − 1, which is a Mersenne prime
+# The prime modulus ensures that all arithmetic operations (such as addition, multiplication, and division) happen within the bounds of a finite field, preventing overflow and ensuring that results are securely wrapped within this field.
 def split_secret(secret, n, k, p=2 ** 127 - 1):
     # secret: The secret to share
     # n: Number of shares to create
@@ -37,6 +39,7 @@ def split_secret(secret, n, k, p=2 ** 127 - 1):
 
     # Randomly generate coefficients for the polynomial
     coefficients = [secret] + [SystemRandom().randint(0, p - 1) for _ in range(k - 1)]
+    print(f"Coefficients: {coefficients}")
 
     # Generate the shares (x, y) pairs where y = f(x) = sum(c_i * x^i)
     shares = []
@@ -51,6 +54,9 @@ def split_secret(secret, n, k, p=2 ** 127 - 1):
 # Function to reconstruct the secret from shares
 def reconstruct_secret(shares, p=2 ** 127 - 1):
     x_s, y_s = zip(*shares)
+    print(f"shares: {shares}")
+    print(f"x_s: {x_s}")
+    print(f"y_s: {y_s}")
     return lagrange_interpolate(0, x_s, y_s, p)
 
 
@@ -75,3 +81,12 @@ if __name__ == "__main__":
     recovered_secret = reconstruct_secret(subset_of_shares)
     assert recovered_secret == secret, "Secret recovery failed"
     print(f"Reconstructed secret: {recovered_secret}")
+
+
+# usecases
+# - Multiple parties receives encrypted and part of data from the source and performs computations on the data.
+# - The parties then send the encrypted data to the server for further computations.
+# - Transaction approval from multiple parties.
+# - For safe tranmission of data from source to destination via multiple routes
+# - For decentralized data storage and retrieval
+# - For collaborative decision making

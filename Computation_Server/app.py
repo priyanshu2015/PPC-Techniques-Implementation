@@ -14,6 +14,11 @@ import base64
 
 import copy
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from zero_knowledge_proof.schnorr_core import ZK, ZKSignature, ZKData
+
 app = Flask(__name__)
 socketio = SocketIO(app)
 
@@ -217,6 +222,57 @@ def compute_sum_single():
 
     # Return the result in JSON
     return jsonify({'sum': result_encoded}), 200
+
+
+server_password = "SecretServerPassword"
+server_zk = ZK.new(curve_name="secp384r1", hash_alg="sha3_512")
+server_signature: ZKSignature = server_zk.create_signature("SecureServerPassword")
+client_signature = None
+
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    global server_password
+    global client_signature
+    global client_zk
+
+    try:
+        print(request.json.get("signature"))
+    except Exception as e:
+        pass
+
+    signature = request.json.get("signature")
+
+    client_signature = ZKSignature.from_json(signature)
+
+    client_zk = ZK(client_signature.params)
+
+    # print(client_zk.token())
+
+    token = server_zk.sign("SecureServerPassword", client_zk.token)
+
+    token = token.to_json()
+
+    return jsonify({"token": token})
+
+
+@app.route('/api/private_route', methods=['POST'])
+def compute():
+    global server_signature
+    global client_signature
+    global server_zk
+
+    proof = request.json.get("proof")
+    proof = ZKData.from_json(proof)
+    token = ZKData.from_json(proof.data)
+
+    if not server_zk.verify(token, server_signature):
+        return jsonify({"error": "Invalid proof"}), 403
+    else:
+        if not client_zk.verify(proof, client_signature, data=token):
+            return jsonify({"error": "Invalid proof"}), 403
+
+    return jsonify({"message": "Access Granted"})
 
 
 if __name__ == '__main__':

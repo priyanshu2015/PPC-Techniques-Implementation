@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero Knowledge Proof Authentication</title>
+    <script>
+        // Function to hit the /login route
+        async function hitLogin() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/zkp/login', {
+                    method: 'GET', // Assuming login is POST
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const jsonResponse = await response.json();
+                document.getElementById('login-response').textContent = JSON.stringify(jsonResponse, null, 2);
+            } catch (error) {
+                document.getElementById('login-response').textContent = 'Error: ' + error;
+            }
+        }
+
+        // Function to hit the /private_route
+        async function hitPrivateRoute() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/zkp/private_route', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const jsonResponse = await response.json();
+                document.getElementById('private-response').textContent = JSON.stringify(jsonResponse, null, 2);
+            } catch (error) {
+                document.getElementById('private-response').textContent = 'Error: ' + error;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Zero Knowledge Proof Authentication</h1>
+
+    <!-- Button to hit the /login route -->
+    <button onclick="hitLogin()">Login</button>
+    <pre id="login-response"></pre>
+
+    <!-- Button to hit the /private_route route -->
+    <button onclick="hitPrivateRoute()">Access Private Route</button>
+    <pre id="private-response"></pre>
+</body>
+</html>

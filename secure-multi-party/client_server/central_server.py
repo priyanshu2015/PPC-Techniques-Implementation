@@ -1,16 +1,8 @@
-from flask import Blueprint, render_template, request, jsonify
-
-import requests
-import secrets
+from flask import Flask, request, jsonify, send_from_directory
 import random
-from .shamir_secret_sharing import split_secret, lagrange_interpolate
+from secret_sharing import split_secret, reconstruct_secret, lagrange_interpolate
 
-
-smpc_bp = Blueprint('smpc', __name__)
-
-@smpc_bp.route('/test')
-def login():
-    return "This is the smpc page."
+app = Flask(__name__)
 
 # Initialize variables
 secret = None
@@ -19,12 +11,10 @@ received_shares = []
 threshold = 4
 num_shares = 6
 
-@smpc_bp.route('/split_info', methods=['GET'])
+@app.route('/split_info', methods=['GET'])
 def split_info():
-    global secret, shares, threshold, num_shares
+    global secret, shares
     secret = int(request.args.get('secret'))
-    num_shares = int(request.args.get('num_shares', 6))
-    threshold = int(request.args.get('threshold', 4))
     shares = split_secret(secret, num_shares, threshold)
     return jsonify({
         "secret": secret,
@@ -32,11 +22,11 @@ def split_info():
         "shares": shares
     })
 
-@smpc_bp.route('/distribution_info', methods=['GET'])
+@app.route('/distribution_info', methods=['GET'])
 def distribution_info():
     return jsonify({"message": "Shares have been distributed to the bank servers."})
 
-@smpc_bp.route('/collect_shares', methods=['GET'])
+@app.route('/collect_shares', methods=['GET'])
 def collect_shares():
     num = int(request.args.get('num', 0))
     if num > len(shares):
@@ -45,7 +35,7 @@ def collect_shares():
     received_shares = random.sample(shares, k=num)
     return jsonify({"shares": received_shares})
 
-@smpc_bp.route('/reconstruct_info', methods=['GET'])
+@app.route('/reconstruct_info', methods=['GET'])
 def reconstruct_info():
     if len(received_shares) < threshold:
         return jsonify({"error": "Not enough shares to reconstruct the secret."}), 400
@@ -57,3 +47,10 @@ def reconstruct_info():
         "selectedShares": received_shares[:threshold],
         "secret": recovered_secret if recovered_secret == secret else "Reconstruction failed."
     })
+
+@app.route('/visualize', methods=['GET'])
+def visualize():
+    return send_from_directory('static', 'index.html')
+
+if __name__ == '__main__':
+    app.run(debug=True, host="0.0.0.0")

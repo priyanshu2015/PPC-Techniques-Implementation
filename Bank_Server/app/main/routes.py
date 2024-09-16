@@ -32,3 +32,13 @@ def display_users():
 
 
     return render_template('user_statistics.html', users=all_users)
+
+
+@main_bp.route('/zkp_page')
+def zkp_page():
+    return render_template('zkp.html')
+
+
+@main_bp.route('/smpc_page')
+def smpc_page():
+    return render_template('smpc.html')
