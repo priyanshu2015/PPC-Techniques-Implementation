@@ -21,6 +21,11 @@
             max-width: 800px;
             width: 100%;
         }
+
+        p.description {
+            font-size: 18px;
+            text-align: center;
+        }
         .user-box {
             background-color: #fff;
             border: 2px solid #ddd;
@@ -136,6 +141,17 @@
 <body>
     <div class="container">
         <h1>User List</h1>
+        <p class="description">
+            This is an example page show a use-case for homomorphic encryption in a bank server.
+            The remote server can compute the sum of all transactions for a user without ever decrypting the transactions.
+        </p>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="http://127.0.0.1:5500/" target="_blank">
+                <button style="background-color: #007BFF; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                    Link to Compute Server Backend
+                </button>
+            </a>
+        </div>
         {% for user in users %}
         <div class="user-box">
             <div class="user-header">

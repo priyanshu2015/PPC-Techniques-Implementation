@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        p.description {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        h2 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .box {
+            width: 200px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 15px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+        .box:hover {
+            transform: scale(1.05);
+        }
+        .homomorphic-enc-page {
+            background-color: #ff9800;
+        }
+        .zkp-page {
+            background-color: #9c27b0;
+        }
+        .smpc-page {
+            background-color: #f44336;
+        }
+        .users-page {
+            background-color: #4caf50;
+        }
+        .transactions-page {
+            background-color: #2196f3;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Bank Server</h1>
+    <p class="description">
+        This is an example bank server implementation to demonstrate the usage of privacy-preserving computation techniques.
+    </p>
+
+    <div class="section">
+        <h2>PPC-Implementation</h2>
+        <div class="container">
+            <a href="/homomorphic_enc_page" class="box homomorphic-enc-page">Homomorphic Encryption</a>
+            <a href="/zkp_page" class="box zkp-page">Zero Knowledge Proof</a>
+            <a href="/smpc_page" class="box smpc-page">Secure Multi-Party Computation</a>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Extras</h2>
+        <div class="container">
+            <a href="/users_page" class="box users-page">Users Page</a>
+            <a href="/transactions_page" class="box transactions-page">Transactions Page</a>
+        </div>
+    </div>
+
+</body>
+</html>

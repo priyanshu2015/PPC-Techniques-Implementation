@@ -6,8 +6,8 @@ import base64
 import json
 import tenseal as ts
 
-import app.homomorphic_enc.homomorphic_encryption
-from app.homomorphic_enc.homomorphic_encryption import (
+
+from .homomorphic_encryption import (
     encrypt_vector_for_sum,
     serialize_encrypted_vector,
     serialize_encrypted_vectors,
