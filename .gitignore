@@ -1,2 +1,7 @@
 venv
-bank.db
+*.db
+.idea/
+*.pth
+TenSEAL
+mpyc/
+*.pth
