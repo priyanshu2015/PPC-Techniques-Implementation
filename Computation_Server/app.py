@@ -225,31 +225,27 @@ def compute_sum_single():
 
 
 server_password = "SecretServerPassword"
-server_zk = ZK.new(curve_name="secp384r1", hash_alg="sha3_512")
+jwt_secret = "JWTSecretKey"
+server_zk = ZK.new(curve_name="secp384r1", hash_alg="sha3_512", jwt_secret=jwt_secret)
 server_signature: ZKSignature = server_zk.create_signature("SecureServerPassword")
-client_signature = None
+# client_signature = None
 
 
 @app.route('/api/login', methods=['POST'])
 def login():
     global server_password
-    global client_signature
-    global client_zk
-
-    try:
-        print(request.json.get("signature"))
-    except Exception as e:
-        pass
 
     signature = request.json.get("signature")
 
     client_signature = ZKSignature.from_json(signature)
 
-    client_zk = ZK(client_signature.params)
+    # client_zk = ZK(client_signature.params)
 
     # print(client_zk.token())
 
-    token = server_zk.sign("SecureServerPassword", client_zk.token)
+    jwt = server_zk.jwt(client_signature)
+
+    token = server_zk.sign("SecureServerPassword", jwt)
 
     token = token.to_json()
 
@@ -265,6 +261,10 @@ def compute():
     proof = request.json.get("proof")
     proof = ZKData.from_json(proof)
     token = ZKData.from_json(proof.data)
+
+    data = server_zk.verify_jwt(token.data)
+    client_signature = ZKSignature.from_json(data["signature"])
+    client_zk = ZK(client_signature.params)
 
     if not server_zk.verify(token, server_signature):
         return jsonify({"error": "Invalid proof"}), 403
