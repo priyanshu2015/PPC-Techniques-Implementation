@@ -1,3 +1,8 @@
 venv
-bank.db
 __pycache__
+*.db
+.idea/
+*.pth
+TenSEAL
+mpyc/
+*.pth

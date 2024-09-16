@@ -8,6 +8,7 @@ from .shamir_secret_sharing import split_secret, lagrange_interpolate
 
 smpc_bp = Blueprint('smpc', __name__)
 
+
 @smpc_bp.route('/test')
 def login():
     return "This is the smpc page."
@@ -18,6 +19,7 @@ shares = []
 received_shares = []
 threshold = 4
 num_shares = 6
+
 
 @smpc_bp.route('/split_info', methods=['GET'])
 def split_info():
@@ -32,9 +34,11 @@ def split_info():
         "shares": shares
     })
 
+
 @smpc_bp.route('/distribution_info', methods=['GET'])
 def distribution_info():
     return jsonify({"message": "Shares have been distributed to the bank servers."})
+
 
 @smpc_bp.route('/collect_shares', methods=['GET'])
 def collect_shares():
@@ -44,6 +48,7 @@ def collect_shares():
     global received_shares
     received_shares = random.sample(shares, k=num)
     return jsonify({"shares": received_shares})
+
 
 @smpc_bp.route('/reconstruct_info', methods=['GET'])
 def reconstruct_info():

@@ -15,6 +15,7 @@ proof = None
 def test():
     return "This is the Zero-Knowledge-Proof page."
 
+
 @zkp_bp.route('/login', methods=['GET'])
 def login():
     global proof
@@ -32,17 +33,22 @@ def login():
 
     # Create a proof that signs the provided token and sends to server
     proof = client_zk.sign(password, token)
-
-    return jsonify({"message": "Login successful"})
+    # return proof.to_json()
+    return jsonify({"message": "Login successful", "proof": proof.to_json()})
 
 
 @zkp_bp.route('/private_route', methods=['GET'])
 def private_route():
+    """
+    This route is a helper route to demonstrate the use of the proof.
+    It takes the saved proof and sends it to the server to verify and access the private route.
+    :return:
+    """
     global proof
 
     # Verify the proof
     if not proof:
-        return jsonify({"error": "No proof provided"}), 400
+        return jsonify({"error": "No proof provided. Loging first"}), 400
 
     proof_to_send = proof.to_json()
 

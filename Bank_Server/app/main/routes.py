@@ -8,7 +8,7 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def home():
-    return "Welcome to the Main Page!"
+    return render_template('index.html')
 
 
 @main_bp.route('/about')
@@ -29,7 +29,6 @@ def transactions_page():
 @main_bp.route('/homomorphic_enc_page')
 def display_users():
     all_users = fetch_all_users()
-
 
     return render_template('user_statistics.html', users=all_users)
 

@@ -4,9 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zero Knowledge Proof Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #007BFF;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3498db;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
     <script>
         // Function to hit the /login route
-        async function hitLogin() {
+        async function hitLogin(buttonElement, responseElement) {
+            buttonElement.innerHTML = '<div class="loading"></div> Logging in...';
             try {
                 const response = await fetch('http://127.0.0.1:5000/zkp/login', {
                     method: 'GET', // Assuming login is POST
@@ -15,14 +75,17 @@
                     }
                 });
                 const jsonResponse = await response.json();
-                document.getElementById('login-response').textContent = JSON.stringify(jsonResponse, null, 2);
+                responseElement.textContent = JSON.stringify(jsonResponse, null, 2);
             } catch (error) {
-                document.getElementById('login-response').textContent = 'Error: ' + error;
+                responseElement.textContent = 'Error: ' + error;
+            } finally {
+                buttonElement.textContent = 'Login';
             }
         }
 
         // Function to hit the /private_route
-        async function hitPrivateRoute() {
+        async function hitPrivateRoute(buttonElement, responseElement) {
+            buttonElement.innerHTML = '<div class="loading"></div> Accessing...';
             try {
                 const response = await fetch('http://127.0.0.1:5000/zkp/private_route', {
                     method: 'GET',
@@ -31,22 +94,26 @@
                     }
                 });
                 const jsonResponse = await response.json();
-                document.getElementById('private-response').textContent = JSON.stringify(jsonResponse, null, 2);
+                responseElement.textContent = JSON.stringify(jsonResponse, null, 2);
             } catch (error) {
-                document.getElementById('private-response').textContent = 'Error: ' + error;
+                responseElement.textContent = 'Error: ' + error;
+            } finally {
+                buttonElement.textContent = 'Access Private Route';
             }
         }
     </script>
 </head>
 <body>
-    <h1>Zero Knowledge Proof Authentication</h1>
+    <div class="container">
+        <h1>Zero Knowledge Proof Authentication</h1>
 
-    <!-- Button to hit the /login route -->
-    <button onclick="hitLogin()">Login</button>
-    <pre id="login-response"></pre>
+        <!-- Button to hit the /login route -->
+        <button id="login-button" onclick="hitLogin(this, document.getElementById('login-response'))">Login</button>
+        <pre id="login-response"></pre>
 
-    <!-- Button to hit the /private_route route -->
-    <button onclick="hitPrivateRoute()">Access Private Route</button>
-    <pre id="private-response"></pre>
+        <!-- Button to hit the /private_route -->
+        <button id="private-button" onclick="hitPrivateRoute(this, document.getElementById('private-response'))">Access Private Route</button>
+        <pre id="private-response"></pre>
+    </div>
 </body>
 </html>
