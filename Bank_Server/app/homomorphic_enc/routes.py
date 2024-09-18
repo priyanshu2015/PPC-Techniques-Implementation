@@ -20,19 +20,24 @@ from .homomorphic_encryption import (
 
 from database.controller import fetch_transactions_by_userid
 
+"""
+This file contains the routes for the Homomorphic Encryption page.
+"""
+
 
 phe_bp = Blueprint('phe', __name__)
 
 COMPUTATION_SERVER_URL = "http://localhost:5500/api"
 
 
-@phe_bp.route('/test')
-def login():
-    return "This is the Homomorphic-Encryption-Page."
-
-
 @phe_bp.route('/transaction_sum/<int:userid>', methods=['GET'])
 def request_transaction_sum(userid):
+    """
+    This function fetches the transactions for a user and calculates the sum of the amounts by sending the encrypted
+    amounts to the computation server
+    :param userid:
+    :return: sum of the transactions
+    """
     start = perf_counter()
 
     transactions = fetch_transactions_by_userid(userid)
@@ -71,6 +76,12 @@ def request_transaction_sum(userid):
 
 
 def request_encrypted_sum(encrypted_vector, number_of_elements) -> ts.bfv_vector:
+    """
+    This function is a helper function that sends the encrypted vector to the computation server to calculate the sum
+    :param encrypted_vector:
+    :param number_of_elements:
+    :return: sum of the encrypted vector
+    """
     headers = {'Content-Type': 'application/json'}
     url = f"{COMPUTATION_SERVER_URL}/compute-sum"
 

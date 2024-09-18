@@ -2,6 +2,10 @@ import sqlite3
 import requests
 import random
 
+"""
+This script populates the bank database with dummy data for users and transactions.
+"""
+
 # Establish a connection to the database
 conn = sqlite3.connect('bank.db')
 cursor = conn.cursor()
@@ -15,6 +19,7 @@ CREATE TABLE IF NOT EXISTS user (
     creditscore INTEGER NOT NULL
 )
 ''')
+
 # Create transactions table
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS transactions (
@@ -38,11 +43,6 @@ def fetch_random_users(n):
 
 
 # Function to generate random transactions
-
-import random
-
-
-# Modified function to create random transactions
 def create_random_transactions(userid, count=100):
     positive_targets = ['Wage', 'Money Transfer']
     negative_targets = ['ATM Withdraw', 'Online Shopping', 'Bill Payment']
@@ -72,7 +72,7 @@ def create_random_transactions(userid, count=100):
     return total_balance  # Return the sum of all transactions
 
 
-# Modified function to populate the database with dummy data and compute correct balances
+# function to populate the database with dummy data and compute correct balances
 def populate_db_with_dummy_data(user_count=10):
     users = fetch_random_users(user_count)  # Fetch random users
     for user in users:

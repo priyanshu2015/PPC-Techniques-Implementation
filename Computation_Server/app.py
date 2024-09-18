@@ -26,8 +26,8 @@ socketio = SocketIO(app)
 This is the computation server that will perform the homomorphic encryption operations.
 It will receive the encrypted vectors from the bank server, perform the sum operation, and send back the result.
 
-For it to work properly, the tenseal context must be the same as the one used in the bank server.
-
+For it to work properly, the tenseal context must be the same as the one used in the bank server. Therefore, the
+context is sent along with the encrypted vectors.
 """
 
 
@@ -228,7 +228,8 @@ server_password = "SecretServerPassword"
 jwt_secret = "JWTSecretKey"
 server_zk = ZK.new(curve_name="secp384r1", hash_alg="sha3_512", jwt_secret=jwt_secret)
 server_signature: ZKSignature = server_zk.create_signature("SecureServerPassword")
-# client_signature = None
+client_signature = None
+
 
 
 @app.route('/api/login', methods=['POST'])
@@ -257,6 +258,10 @@ def compute():
     global server_signature
     global client_signature
     global server_zk
+
+    if client_signature is None:
+        return jsonify({"error": "Not authenticated"}), 401
+
 
     proof = request.json.get("proof")
     proof = ZKData.from_json(proof)

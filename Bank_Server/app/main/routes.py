@@ -5,15 +5,13 @@ from database.controller import fetch_all_users
 # Create the blueprint for main routes
 main_bp = Blueprint('main', __name__)
 
+"""
+This file contains all the routes for the GUI of the application.
+"""
 
 @main_bp.route('/')
 def home():
     return render_template('index.html')
-
-
-@main_bp.route('/about')
-def about():
-    return "This is the about page."
 
 
 @main_bp.route('/users_page')

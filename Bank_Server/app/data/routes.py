@@ -10,6 +10,10 @@ from database.controller import (
     fetch_transactions_by_userid
 )
 
+"""
+This file contains the routes for fetching data from the database.
+"""
+
 data_bp = Blueprint('data', __name__)
 
 

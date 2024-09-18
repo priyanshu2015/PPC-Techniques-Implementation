@@ -2,6 +2,11 @@ import tenseal as ts
 import time
 import base64
 
+"""
+This file contains all the functions and setup for homomorphic encryption operations
+
+"""
+
 POLY_MODULUS_DEGREE = 16384
 #POLY_MODULUS_DEGREE = 8192
 #POLY_MODULUS_DEGREE = 4096
@@ -79,7 +84,7 @@ def encrypt_vector_for_sum(vector: list) -> (list, int):
     :param vector:
     :return:
     """
-    divisor = int(POLY_MODULUS_DEGREE / 2)  # the divisor splits the vector into smaller chunks to be encrypted,
+    divisor = int(POLY_MODULUS_DEGREE / 2)  # the divisor splits the vector into smaller chunks to be encrypted
     encrypted_chunks = []
     if len(vector) > divisor:
         for i in range(0, len(vector), divisor):
@@ -143,6 +148,10 @@ def deserialize_encrypted_vectors(serialized_vectors: list[bytes]) -> list[ts.bf
 
 
 def get_serialized_context():
+    """
+    Serialize the context and return the base64 encoded string
+    :return: serialized context string
+    """
     context_serialized = context.serialize(save_public_key=True, save_secret_key=False, save_galois_keys=True)
     context_encoded = base64.b64encode(context_serialized).decode('utf-8')
     return context_encoded

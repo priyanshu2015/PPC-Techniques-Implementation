@@ -8,6 +8,9 @@ from app.smpc.routes import smpc_bp
 from app.zero_knowledge_proof.routes import zkp_bp
 from app.data.routes import data_bp
 
+"""
+This file creates the Flask app and configures all the blueprints and routes.
+"""
 
 def create_app():
     app = Flask(__name__)

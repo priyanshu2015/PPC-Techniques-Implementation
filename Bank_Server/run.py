@@ -4,6 +4,10 @@ import argparse
 import os
 import socket
 
+"""
+This is the entry point for the server.
+"""
+
 if __name__ == '__main__':
     print('Starting the server...')
 

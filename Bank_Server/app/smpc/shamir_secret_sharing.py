@@ -3,6 +3,9 @@ from random import SystemRandom
 from functools import reduce
 from operator import mul
 
+"""
+This file contains the implementation of Shamir's Secret Sharing algorithm.
+"""
 
 # Function to perform modular inverse
 def mod_inverse(a, p):

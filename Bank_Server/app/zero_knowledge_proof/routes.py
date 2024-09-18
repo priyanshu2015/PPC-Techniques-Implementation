@@ -10,10 +10,9 @@ zkp_bp = Blueprint('zkp', __name__)
 
 proof = None
 
-
-@zkp_bp.route('/test')
-def test():
-    return "This is the Zero-Knowledge-Proof page."
+"""
+This file contains the routes for the Zero-Knowledge-Proof backend routes.
+"""
 
 
 @zkp_bp.route('/login', methods=['GET'])
