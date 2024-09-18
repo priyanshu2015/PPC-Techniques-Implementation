@@ -17,8 +17,8 @@ The Bank Server is a server that contains a database of users and transactions a
 To run the Bank Server, you need to have Python 3.19 installed on your machine.
 Then run the following commands.
 ```
-cd Computation_Server 
-python app.py
+cd Bank_Server 
+python run.py
 ```
 
 ## Folder Structure
@@ -62,3 +62,10 @@ The app folder contains the following :
 # Computation Server
 - Server to perform the homomorphic encryption.
 - has some routes to perform the homomorphic encryption.
+
+## Running the Computation Server
+To run the Computation Server, you need to run the following commands.
+```
+cd Computation_Server 
+python app.py
+```
