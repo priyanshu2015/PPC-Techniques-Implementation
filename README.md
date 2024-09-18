@@ -1,21 +1,24 @@
-# TODO
-- Implement a gui for shamir secret sharing
-- Implement a gui for homomorphic encryption
-  - Implement a gui for the computation server
-- Implement the zero-knowledge proof
-  - Implement the zero-knowledge proof for the computation server
-- Implement the secure multi-party computation between multiple bank servers
-- write the documentation for the code
-- integrate the gui with the bank server for click and run
+# Implementation of Privacy-Preserving Computation techniques
+This project is an implementation of privacy-preserving computation techniques using Python and Flask.
+The project consists of two servers, the Bank Server and the Computation Server.
+The following techniques are implemented in the project:
+- Homomorphic Encryption
+- Secure Multi-Party Computation
+- Zero-Knowledge Proof
+
+# Installation
+To install the project, you need to have Python 3.19 installed on your machine.
+- clone the repository
+- install the requirements
 
 # Bank Server
-
+The Bank Server is a server that contains a database of users and transactions and provides and interactive Gui.
 ## Running the Bank Server
 To run the Bank Server, you need to have Python 3.19 installed on your machine.
 Then run the following commands.
 ```
-cd Computation_Server 
-python app.py
+cd Bank_Server 
+python run.py
 ```
 
 ## Folder Structure
@@ -59,3 +62,10 @@ The app folder contains the following :
 # Computation Server
 - Server to perform the homomorphic encryption.
 - has some routes to perform the homomorphic encryption.
+
+## Running the Computation Server
+To run the Computation Server, you need to run the following commands.
+```
+cd Computation_Server 
+python app.py
+```
