@@ -96,9 +96,13 @@ def truncate_dict(d: dict, max_length: int) -> dict:
 request_log = []
 
 
-# Middleware that logs request data only for API routes
+
 @app.before_request
 def log_request_data():
+    """
+    Middleware that logs request data only for API routes
+    :return:
+    """
     if not request.path.startswith('/api/'):
         return
     req_data = {
@@ -119,9 +123,13 @@ def log_request_data():
     request.req_data = req_data
 
 
-# After request handler to log the response status code
 @app.after_request
 def log_response(response):
+    """
+    After request handler to log the response status code
+    :param response:
+    :return:
+    """
     # Only log for API routes
     if not request.path.startswith('/api/'):
         return response
@@ -138,20 +146,22 @@ def log_response(response):
     return response
 
 
-# API route to fetch the request log dynamically via polling
 @app.route('/request_log')
 def get_request_log():
+    """
+    This route is used to fetch the request log data initially and the new data via the websocket
+    :return:
+    """
     return jsonify(request_log)
 
 
 @app.route('/')
 def home():
+    """
+    Render the GUI
+    :return:
+    """
     return render_template('index.html')
-
-
-@app.route('/api/test')
-def test():
-    return jsonify("test")
 
 
 @app.route('/api/compute-sum', methods=['POST'])
@@ -234,6 +244,10 @@ client_signature = None
 
 @app.route('/api/login', methods=['POST'])
 def login():
+    """
+    This route is used to authenticate the client using ZKP and generate a token for the client.
+    :return:
+    """
     global server_password
 
     signature = request.json.get("signature")
@@ -255,6 +269,9 @@ def login():
 
 @app.route('/api/private_route', methods=['POST'])
 def compute():
+    """
+    This route is a private route that requires the client to authenticate using ZKP.
+    """
     global server_signature
     global client_signature
     global server_zk
