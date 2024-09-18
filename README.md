@@ -9,11 +9,28 @@
 - integrate the gui with the bank server for click and run
 
 # Bank Server
+
+## Running the Bank Server
+To run the Bank Server, you need to have Python 3.19 installed on your machine.
+Then run the following commands.
+```
+cd Computation_Server 
+python app.py
+```
+
+## Folder Structure
 The app folder contains all the source code for the Bank Server.
 The database folder contains the database schema and the database connection file and also
 a controller file for the database connection.
 
-The app folder contains the following folders:
+The run.py file is the entry point for the Bank Server.
+The database folder contains the database schema and the database controller and a file to generate
+random data for the database.
+
+The app folder contains the following :
+- \_\_init\_\_.py:
+  - This file initializes the app and contains all the routes for the app.
+
 - data:
   - This folder contains the simple api to access the database.
 
