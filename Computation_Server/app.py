@@ -224,59 +224,81 @@ def compute_sum_single():
     return jsonify({'sum': result_encoded}), 200
 
 
+# Initialize server credentials and ZKP instance
 server_password = "SecretServerPassword"
 jwt_secret = "JWTSecretKey"
-server_zk = ZK.new(curve_name="secp384r1", hash_alg="sha3_512", jwt_secret=jwt_secret)
-server_signature: ZKSignature = server_zk.create_signature("SecureServerPassword")
-client_signature = None
 
+# Create a ZKP instance with secp384r1 curve and sha3_512 hash algorithm
+server_zk = ZK.new(curve_name="secp384r1", hash_alg="sha3_512", jwt_secret=jwt_secret)
+
+# Generate a signature for server authentication
+server_signature: ZKSignature = server_zk.create_signature("SecureServerPassword")
 
 
 @app.route('/api/login', methods=['POST'])
 def login():
+    """
+    Handle the login request. This route:
+    - Receives the client's ZKP signature.
+    - Generates a JWT based on the client's signature.
+    - Signs the JWT with the server's secret.
+    - Returns the signed JWT as a token to the client.
+
+    Returns:
+        JSON response containing the JWT token.
+    """
     global server_password
 
+    # Get the client's signature from the request
     signature = request.json.get("signature")
 
+    # Convert the signature from JSON format to ZKSignature object
     client_signature = ZKSignature.from_json(signature)
 
-    # client_zk = ZK(client_signature.params)
-
-    # print(client_zk.token())
-
+    # Generate a JWT using the server's ZKP instance
     jwt = server_zk.jwt(client_signature)
 
+    # Sign the JWT with the server's password
     token = server_zk.sign("SecureServerPassword", jwt)
 
+    # Convert the token to JSON format and return
     token = token.to_json()
-
     return jsonify({"token": token})
 
 
 @app.route('/api/private_route', methods=['POST'])
 def compute():
+    """
+    Handle requests to the private route. This route:
+    - Verifies the client's proof of authentication.
+    - Checks if the client has a valid signature and JWT.
+    - Validates the proof against the server's signature.
+
+    Returns:
+        JSON response indicating whether access is granted or denied.
+    """
     global server_signature
-    global client_signature
     global server_zk
 
-    if client_signature is None:
-        return jsonify({"error": "Not authenticated"}), 401
-
-
+    # Get the proof from the request
     proof = request.json.get("proof")
     proof = ZKData.from_json(proof)
     token = ZKData.from_json(proof.data)
 
+    # Verify the JWT using the server's ZKP instance
     data = server_zk.verify_jwt(token.data)
     client_signature = ZKSignature.from_json(data["signature"])
     client_zk = ZK(client_signature.params)
 
+    # Verify the proof against the server's signature
     if not server_zk.verify(token, server_signature):
         return jsonify({"error": "Invalid proof"}), 403
     else:
+        # Verify the proof with the client's ZKP instance
         if not client_zk.verify(proof, client_signature, data=token):
             return jsonify({"error": "Invalid proof"}), 403
 
+    # Return a success message if the proof is valid
     return jsonify({"message": "Access Granted"})
 
 
