@@ -27,7 +27,7 @@ This file contains the routes for the Homomorphic Encryption page.
 
 phe_bp = Blueprint('phe', __name__)
 
-COMPUTATION_SERVER_URL = "http://localhost:5500/api"
+COMPUTATION_SERVER_URL = "http://127.0.0.1:5500/api"
 
 
 @phe_bp.route('/transaction_sum/<int:userid>', methods=['GET'])
